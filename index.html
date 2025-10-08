@@ -5,6 +5,43 @@
 </head>
 <body>
     <h1>Live Camera Feed</h1>
-    <img src="/video" width="640" height="480" />
+    <video id="video" width="640" height="480" autoplay muted></video>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+    <p>Fatigue Score: <span id="fatigue">0</span></p>
+    <audio id="alertSound" src="alert.mp3"></audio>
+
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const fatigueEl = document.getElementById("fatigue");
+        const alertSound = document.getElementById("alertSound");
+        const ALERT_THRESHOLD = 0.75;
+
+        // Access webcam
+        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+            video.srcObject = stream;
+        });
+
+        // Capture frame and send to server every 500ms
+        setInterval(async () => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append("file", blob, "frame.jpg");
+                
+                const response = await fetch("/analyze", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await response.json();
+                fatigueEl.textContent = data.fatigue_score.toFixed(2);
+
+                if(data.fatigue_score > ALERT_THRESHOLD){
+                    alertSound.play();
+                }
+            }, "image/jpeg");
+        }, 500);
+    </script>
 </body>
 </html>
