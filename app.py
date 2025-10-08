@@ -1,10 +1,22 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import cv2
 import numpy as np
-import io
 
 app = FastAPI(title="Drowsiness Detector (Browser Webcam)")
+
+# ---------- CORS ----------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change to your frontend URL if needed
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ---------- Static Files ----------
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ---------- Config ----------
 EAR_CONSEC_FRAMES = 15
@@ -53,9 +65,14 @@ def analyze_frame(frame_bytes):
         "blink_counter": int(blink_counter)
     }
 
-# ---------- Route ----------
+# ---------- Routes ----------
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
     frame_bytes = await file.read()
     result = analyze_frame(frame_bytes)
     return JSONResponse(result)
+
+@app.get("/")
+def home():
+    with open("index.html", "r") as f:
+        return HTMLResponse(content=f.read())
