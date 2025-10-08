@@ -3,14 +3,14 @@ from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import cv2
-import numpy as np  
+import numpy as np
 
 app = FastAPI(title="Drowsiness Detector (Browser Webcam)")
 
 # ---------- CORS ----------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to your frontend URL if needed
+    allow_origins=["*"],  # change to your frontend URL if needed
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -21,7 +21,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # ---------- Config ----------
 EAR_CONSEC_FRAMES = 15
 ALERT_THRESHOLD = 0.75
-
 blink_counter = 0
 fatigue_score = 0.0
 
@@ -35,8 +34,6 @@ def smooth(prev, new, alpha=0.2):
 
 def analyze_frame(frame_bytes):
     global blink_counter, fatigue_score
-
-    # Convert bytes to numpy array
     nparr = np.frombuffer(frame_bytes, np.uint8)
     frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
