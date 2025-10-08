@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import cv2
-import numpy as np
+import numpy as np  
 
 app = FastAPI(title="Drowsiness Detector (Browser Webcam)")
 
